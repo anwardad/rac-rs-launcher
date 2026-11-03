@@ -43,7 +43,24 @@ fn main() {
     if let Some(i) = icon() {
         viewport = viewport.with_icon(i);
     }
-    let opts = eframe::NativeOptions { viewport, ..Default::default() };
+    // Determine the desired renderer. Default to Glow (OpenGL).
+let renderer = match std::env::var("RAC_RS_LAUNCHER_RENDERER").as_deref() {
+    Ok("wgpu") | Ok("dx11") => eframe::Renderer::Wgpu,
+    _ => eframe::Renderer::Glow,
+};
+
+// If using wgpu and wanting to force DX11 on Windows, set the backend.
+#[cfg(target_os = "windows")]
+if matches!(renderer, eframe::Renderer::Wgpu) {
+    // This must be set before wgpu initializes.
+    std::env::set_var("WGPU_BACKEND", "dx11");
+}
+
+let opts = eframe::NativeOptions {
+    viewport,
+    renderer, // Add the renderer field
+    ..Default::default()
+};
     let result = eframe::run_native(
         "RAC-RS Launcher",
         opts,
