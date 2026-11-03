@@ -58,7 +58,7 @@ if matches!(renderer, eframe::Renderer::Wgpu) {
 
 let opts = eframe::NativeOptions {
     viewport,
-    renderer, // Add the renderer field
+    renderer: eframe::Renderer::Glow, // Force OpenGL
     ..Default::default()
 };
     let result = eframe::run_native(
