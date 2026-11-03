@@ -15,7 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 egui = { version = "0.37.0", default-features = false }
-eframe = { version = "0.37.0", default-features = false, features = ["glow", "default_fonts", "wayland", "x11"] }
+eframe = { version = "0.37.0", default-features = false, features = ["glow",  "wgpu","default_fonts", "wayland", "x11"] }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 rfd = { version = "0.17.2", default-features = false }
 serde = { version = "1.0.229", features = ["derive"] }
