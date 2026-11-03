@@ -1,0 +1,45 @@
+name: Build Windows Launcher
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:   # allows manual trigger from the Actions tab
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust (stable, MSVC toolchain)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache cargo registry & target
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "launcher -> launcher/target"
+
+      - name: Build launcher (release)
+        run: cargo build --release --manifest-path launcher/Cargo.toml
+
+      - name: Locate produced exe
+        id: find_exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path launcher/target/release -Filter "*.exe" -File | Select-Object -First 1
+          if (-not $exe) { throw "No .exe found in launcher/target/release" }
+          Write-Host "Found: $($exe.FullName)"
+          echo "exe_path=$($exe.FullName)" >> $env:GITHUB_OUTPUT
+          echo "exe_name=$($exe.Name)"        >> $env:GITHUB_OUTPUT
+
+      - name: Upload exe as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rac-rs-launcher-windows-${{ github.sha }}
+          path: ${{ steps.find_exe.outputs.exe_path }}
+          if-no-files-found: error
